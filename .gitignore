@@ -42,10 +42,15 @@ dist-ssr/
 *.tar.gz
 
 # Environment
-.env
+.env   东莞。
 .env.local
 .env.*.local
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Environment variables
+.env   东莞。
+backend/.env
+*.env
