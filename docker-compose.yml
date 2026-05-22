@@ -1,31 +1,31 @@
 services:
   backend:
-    build:   构建:
-      context: .   背景:。
-      dockerfile: backend/Dockerfiledockerfile: backend / dockerfile
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: ruanjianbei-backend
-    ports:   港口:
-      - "8000:8000"   ——“8000:8000"
+    ports:
+      - "8000:8000"
     env_file:
       - backend/.env   # ⭐ 指定 backend 目录下的 .env
-    environment:   环境:
-      - ENVIRONMENT=production   -环境=生产
-      - DATABASE_URL=sqlite+aiosqlite:///data/app.db- DATABASE_URL=sqlite原词:///data/app.db
-    volumes:   卷:
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=sqlite+aiosqlite:///data/app.db
+    volumes:
       - backend-data:/app/data
-    restart: unless-stopped   重启:unless-stopped
+    restart: unless-stopped
 
   frontend:
-    build:   构建:
-      context: .   背景:。
+    build:
+      context: .
       dockerfile: frontend/Dockerfile
     container_name: ruanjianbei-frontend
-    ports:   港口:
+    ports:
       - "8080:80"
     depends_on:
       - backend
-    restart: unless-stopped   重启:unless-stopped
+    restart: unless-stopped
 
-volumes:   卷:
+volumes:
   backend-data:
-    driver: local   司机:当地
+    driver: local
