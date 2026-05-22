@@ -6,6 +6,5 @@
 ## 启动步骤
 
 ### 1. 配置环境变量（可选）
-修改这个 `.env.example`文件名 为 `.env  。`，填写你的 API Key(孩子们就是我群里发的)
+修改这个 `.env.example`文件名 为 `.env `，填写你的 API Key(孩子们就是我群里发的)
 
-cp .env.example .env   图为.env。例如.env   图为.env。例如.env
