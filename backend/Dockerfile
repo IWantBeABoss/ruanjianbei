@@ -1,34 +1,25 @@
-# backend/Dockerfile
-FROM node:22-alpine AS frontend-builder
-
-WORKDIR /frontend
-COPY frontend/package*.json ./
-RUN npm ci
-COPY frontend/ ./
-RUN npm run build
-
 FROM python:3.14-slim
 
-ENV PYTHONUNBUFFERED=1 \
+RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources
+
+ENV PYTHONUNBUFFERED=1 \   Env pythonunbuffered =1 \
     PYTHONDONTWRITEBYTECODE=1
 
-WORKDIR /app
+WORKDIR /app   WORKDIR /应用程序
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \执行命令apt-get update &；&
     gcc \
     libsqlite3-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*&& rm -rf /var/lib/apt/list /*
 
-COPY requirements.txt .
+COPY requirements.txt .   COPY requirements.txt。
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-COPY backend/ ./backend/
+COPY backend/ ./
 
-COPY --from=frontend-builder /frontend/dist /app/static
+RUN mkdir -p /app/data   执行mkdir -p /app/data命令
 
-RUN mkdir -p /app/data
+EXPOSE 8000   8000年公开
 
-EXPOSE 8000
-
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
