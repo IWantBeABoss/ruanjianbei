@@ -1,0 +1,13 @@
+fastapi==0.115.6
+uvicorn==0.34.0
+sqlalchemy==2.0.36
+aiosqlite==0.20.0
+openai==2.37.0
+sse-starlette==2.2.1
+greenlet==3.5.0
+python-dotenv==1.0.1
+python-jose[cryptography]==3.5.0
+bcrypt==5.0.0
+langgraph==1.2.0
+langchain-core==1.4.0
+langchain-openai==1.2.1
