@@ -1,6 +1,6 @@
 # 软件杯项目
 
-## 方式一：VS Code Dev Container（推荐，无需配环境）
+## 方式一：VS Code Dev Container（用这个简单一点）
 
 队友 clone 后无需安装任何环境，VS Code 自动完成所有配置。
 
