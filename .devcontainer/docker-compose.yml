@@ -1,0 +1,46 @@
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: .devcontainer/backend.Dockerfile
+    container_name: ruanjianbei-dev-backend
+    working_dir: /workspace/backend
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ..:/workspace:cached
+      - backend-data:/workspace/backend/data
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../backend/.env
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///data/app.db
+    networks:
+      - dev-network
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: .devcontainer/frontend.Dockerfile
+    container_name: ruanjianbei-dev-frontend
+    working_dir: /workspace/frontend
+    command: sh -c "npm install --prefer-offline && npm run dev -- --host 0.0.0.0"
+    volumes:
+      - ..:/workspace:cached
+      - frontend-node-modules:/workspace/frontend/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - dev-network
+
+volumes:
+  backend-data:
+    driver: local
+  frontend-node-modules:
+    driver: local
+
+networks:
+  dev-network:
+    driver: bridge
