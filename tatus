@@ -1,0 +1,441 @@
+warning: in the working copy of 'backend/agent_prompts.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/auth.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/database.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/exercise_parser.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/main.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/models.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/multi_agent.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/openai_client.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/profile_agent.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/schemas.py', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/.dockerignore b/.dockerignore[m
+[1mdeleted file mode 100644[m
+[1mindex 6e79b17..0000000[m
+[1m--- a/.dockerignore[m
+[1m+++ /dev/null[m
+[36m@@ -1,14 +0,0 @@[m
+[31m-.venv/[m
+[31m-__pycache__/[m
+[31m-*.pyc[m
+[31m-.git/[m
+[31m-.gitignore[m
+[31m-.idea/[m
+[31m-.vscode/[m
+[31m-.env[m
+[31m-.env.local[m
+[31m-*.log[m
+[31m-data/[m
+[31m-.DS_Store[m
+[31m-frontend/node_modules/[m
+[31m-frontend/dist/[m
+\ No newline at end of file[m
+[1mdiff --git a/backend/agent_prompts.py b/backend/agent_prompts.py[m
+[1mindex 88e86a3..94fff48 100644[m
+[1m--- a/backend/agent_prompts.py[m
+[1m+++ b/backend/agent_prompts.py[m
+[36m@@ -1,4 +1,7 @@[m
+[31m-# --   意图识别agent      -----------------------[m
+[32m+[m[32m#提示词文件方便维护[m
+[32m+[m
+[32m+[m
+[32m+[m[32m# ----   意图识别agent      -----------------------[m
+ [m
+ COORDINATOR_PROMPT = """[m
+ # 意图识别Router (IntentRouter)[m
+[1mdiff --git a/backend/auth.py b/backend/auth.py[m
+[1mindex 9230b4e..ce20ec0 100644[m
+[1m--- a/backend/auth.py[m
+[1m+++ b/backend/auth.py[m
+[36m@@ -9,6 +9,8 @@[m [mfrom sqlalchemy.ext.asyncio import AsyncSession[m
+ [m
+ from database import get_session[m
+ [m
+[32m+[m[32m#生成和进行JWT令牌校验的基操(其实写法和JAVA的差不多QAQ)[m
+[32m+[m
+ SECRET_KEY = os.getenv("JWT_SECRET_KEY", "ruanjianbei-dev-secret-key-change-in-prod")[m
+ ALGORITHM = "HS256"[m
+ TOKEN_EXPIRE_HOURS = 168  # 7 days[m
+[1mdiff --git a/backend/database.py b/backend/database.py[m
+[1mindex 2967102..517c0f2 100644[m
+[1m--- a/backend/database.py[m
+[1m+++ b/backend/database.py[m
+[36m@@ -1,6 +1,8 @@[m
+ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession[m
+ from sqlalchemy.orm import DeclarativeBase[m
+ [m
+[32m+[m[32m#数据库的相关配置(注:用的sqlite，方便本地运行)[m
+[32m+[m
+ DATABASE_URL = "sqlite+aiosqlite:///./chat.db"[m
+ [m
+ engine = create_async_engine(DATABASE_URL, echo=False)[m
+[1mdiff --git a/backend/exercise_parser.py b/backend/exercise_parser.py[m
+[1mindex 00e43dc..a3558d2 100644[m
+[1m--- a/backend/exercise_parser.py[m
+[1m+++ b/backend/exercise_parser.py[m
+[36m@@ -2,6 +2,8 @@[m [mimport json[m
+ import re[m
+ [m
+ [m
+[32m+[m[32m#练习题的解析器(有JSON和Markdown的)[m
+[32m+[m
+ def _extract_answer_block(text: str) -> tuple[str, str]:[m
+     """Split text into question body and answer/explanation block."""[m
+     patterns = [[m
+[36m@@ -31,7 +33,7 @@[m [mdef _is_header(text: str) -> bool:[m
+     return bool(_HEADER_PATTERNS.match(text.strip()))[m
+ [m
+ [m
+[31m-# ── unified helpers ──────────────────────────────────────────────[m
+[32m+[m[32m# ── 对练习题的各个部分进行提取(也就是将:题目、答案和解析分开) ──────────────────────────────────────────────[m
+ [m
+ def _split_numbered_blocks(text: str) -> list[str]:[m
+     """Split text by numbered item markers. Filters out header lines first."""[m
+[36m@@ -48,7 +50,7 @@[m [mdef _extract_answer_letter(ans_block: str) -> str:[m
+     return m.group(1) if m else ""[m
+ [m
+ [m
+[31m-# ── choice parser (option-group–anchored) ─────────────────────────[m
+[32m+[m[32m# ── 选择的组件(claude写的，测试了没问题) ─────────────────────────[m
+ [m
+ def _parse_choice_questions(text: str) -> list[dict]:[m
+     """Parse multiple choice questions by locating option groups (A/B/C/D)[m
+[36m@@ -154,7 +156,7 @@[m [mdef _parse_choice_questions(text: str) -> list[dict]:[m
+     return questions[m
+ [m
+ [m
+[31m-# ── fill-blank parser ─────────────────────────────────────────────[m
+[32m+[m[32m# ── 填空题解析器(其实就是占位符) ─────────────────────────────────────────────[m
+ [m
+ def _parse_fill_blank_questions(text: str) -> list[dict]:[m
+     """Parse fill-in-the-blank questions."""[m
+[36m@@ -172,7 +174,7 @@[m [mdef _parse_fill_blank_questions(text: str) -> list[dict]:[m
+     return questions[m
+ [m
+ [m
+[31m-# ── true-false parser ─────────────────────────────────────────────[m
+[32m+[m[32m# ── 判断题解析器(进行判断题校验的) ─────────────────────────────────────────────[m
+ [m
+ def _parse_true_false_questions(text: str) -> list[dict]:[m
+     """Parse true/false questions from LLM output.[m
+[36m@@ -212,7 +214,7 @@[m [mSUBSECTION_PATTERNS = [[m
+ ][m
+ [m
+ [m
+[31m-# ── main entry point ─────────────────────────────────────────────[m
+[32m+[m[32m# ── 主入口点 ─────────────────────────────────────────────[m
+ [m
+ def parse_exercises_from_content(content: str, subject: str = "") -> list[dict]:[m
+     """Parse multi-agent exercise output into a list of structured question dicts."""[m
+[36m@@ -273,7 +275,7 @@[m [mdef parse_exercises_from_content(content: str, subject: str = "") -> list[dict]:[m
+     return unique[m
+ [m
+ [m
+[31m-# ── JSON parser (for Quiz agent's structured output) ────────────────[m
+[32m+[m[32m# ── JSON Parser 是专门用于解析 Quiz Agent 结构化输出的解析器，防止格式出问题 ────────────────[m
+ [m
+ TYPE_MAP = {[m
+     "choice": "choice",[m
+[1mdiff --git a/backend/main.py b/backend/main.py[m
+[1mindex c575e3d..5f0719a 100644[m
+[1m--- a/backend/main.py[m
+[1m+++ b/backend/main.py[m
+[36m@@ -36,7 +36,7 @@[m [mfrom auth import hash_password, verify_password, create_access_token, get_curren[m
+ from exercise_parser import parse_exercises_from_content[m
+ [m
+ [m
+[31m-# ── Resource helpers ─────────────────────────────────────────────────[m
+[32m+[m[32m# ── 给定生成资源的后缀名 ─────────────────────────────────────────────────[m
+ [m
+ FILE_EXTENSIONS = {[m
+     "document": ".md", "quiz": ".md", "mindmap": ".md",[m
+[36m@@ -60,7 +60,7 @@[m [mdef _generate_file_name(rtype: str, topic: str) -> str:[m
+     return f"{safe_topic}_{label}{ext}"[m
+ [m
+ [m
+[31m-# ── App ─────────────────────────────────────────────────────────────[m
+[32m+[m[32m# ── 创建App实例 ─────────────────────────────────────────────────────────────[m
+ [m
+ @asynccontextmanager[m
+ async def lifespan(app: FastAPI):[m
+[36m@@ -97,7 +97,7 @@[m [mif os.path.exists(static_dir):[m
+ [m
+ [m
+ [m
+[31m-# --- Auth Routes ---[m
+[32m+[m[32m# --- 认证识别接口(进行JWT令牌校验,和JAVA类似) ---[m
+ [m
+ @app.post("/api/auth/register", response_model=TokenResponse)[m
+ async def register(req: UserRegister, session: AsyncSession = Depends(get_session)):[m
+[36m@@ -138,7 +138,7 @@[m [masync def get_me(user: User = Depends(get_current_user)):[m
+     return UserOut(id=user.id, username=user.username, created_at=user.created_at)[m
+ [m
+ [m
+[31m-# --- Conversation Routes ---[m
+[32m+[m[32m# --- 对话相关接口 ---[m
+ [m
+ @app.post("/api/conversations")[m
+ async def create_conversation([m
+[36m@@ -453,7 +453,7 @@[m [masync def _extract_exercises_from_resources(conv_id: str, user_id: str, subject:[m
+         pass[m
+ [m
+ [m
+[31m-# --- Student Profile Routes ---[m
+[32m+[m[32m# --- 学生用户画像相关接口 ---[m
+ [m
+ @app.get("/api/student/profile")[m
+ async def get_profile([m
+[36m@@ -526,8 +526,8 @@[m [masync def get_profile_markdown([m
+     profile = await get_or_create_profile(session, user.id)[m
+     return {"markdown": format_profile_as_markdown(profile)}[m
+ [m
+[31m-[m
+[31m-# --- Learning Materials ---[m
+[32m+[m[32m#——————TODO[m
+[32m+[m[32m# --- 学习资料接口(定义比较广泛) ---[m
+ [m
+ MATERIAL_SECTION_MARKERS = [[m
+     "## 📖 课程讲解文档",[m
+[36m@@ -603,7 +603,7 @@[m [masync def list_materials([m
+     return materials[m
+ [m
+ [m
+[31m-# --- Exercises ---[m
+[32m+[m[32m# --- 练习题的接口 ---[m
+ [m
+ @app.get("/api/exercises")[m
+ async def list_exercises([m
+[36m@@ -636,14 +636,14 @@[m [masync def list_exercises([m
+     ][m
+ [m
+ [m
+[31m-# --- Resources ---[m
+[32m+[m[32m# --- 资源相关接口 ---[m
+ [m
+ @app.get("/api/resources/all")[m
+ async def list_all_resources([m
+     user: User = Depends(get_current_user),[m
+     session: AsyncSession = Depends(get_session),[m
+ ):[m
+[31m-    """Return all resources for the current user, grouped by conversation."""[m
+[32m+[m[32m    """(把当前用户生成的资源按对话模块进行分组)Return all resources for the current user, grouped by conversation."""[m
+     stmt = ([m
+         select(Resource)[m
+         .where(Resource.user_id == user.id)[m
+[36m@@ -705,7 +705,7 @@[m [masync def download_resource([m
+     user: User = Depends(get_current_user),[m
+     session: AsyncSession = Depends(get_session),[m
+ ):[m
+[31m-    """Download a resource as a file."""[m
+[32m+[m[32m    """(把资源转换成可下载的文件形式)Download a resource as a file."""[m
+     from fastapi.responses import Response[m
+     stmt = select(Resource).where(Resource.id == resource_id, Resource.user_id == user.id)[m
+     result = await session.execute(stmt)[m
+[36m@@ -725,7 +725,7 @@[m [masync def download_resource([m
+     ext = FILE_EXTENSIONS.get(r.resource_type, ".md")[m
+     media_type = content_type_map.get(ext, "text/plain; charset=utf-8")[m
+ [m
+[31m-    # RFC 5987: encode non-ASCII filename for Content-Disposition[m
+[32m+[m[32m    # (将中文文件名转换成ASCII码编码的形式)RFC 5987: encode non-ASCII filename for Content-Disposition[m
+     encoded_name = quote(r.file_name, safe="")[m
+     fallback = f"{r.resource_type}{ext}"[m
+ [m
+[1mdiff --git a/backend/models.py b/backend/models.py[m
+[1mindex 4e3cae8..3f9776e 100644[m
+[1m--- a/backend/models.py[m
+[1m+++ b/backend/models.py[m
+[36m@@ -7,6 +7,8 @@[m [mfrom sqlalchemy.orm import relationship[m
+ from database import Base[m
+ [m
+ [m
+[32m+[m[32m#定义数据库字段的部分[m
+[32m+[m
+ def _uuid():[m
+     return str(uuid.uuid4())[m
+ [m
+[1mdiff --git a/backend/multi_agent.py b/backend/multi_agent.py[m
+[1mindex 1ce4408..5242158 100644[m
+[1m--- a/backend/multi_agent.py[m
+[1m+++ b/backend/multi_agent.py[m
+[36m@@ -22,7 +22,7 @@[m [mfrom agent_prompts import ([m
+ )[m
+ from openai_client import chat_complete, stream_chat[m
+ [m
+[31m-# ── Constants ───────────────────────────────────────────────────────[m
+[32m+[m[32m# ── 定义的常量 ───────────────────────────────────────────────────────[m
+ [m
+ RESOURCE_PROMPTS = {[m
+     "document": DOCUMENT_PROMPT, "quiz": QUIZ_PROMPT,[m
+[36m@@ -58,7 +58,7 @@[m [mdef get_pipeline_profile_updates() -> dict:[m
+     return result[m
+ [m
+ [m
+[31m-# ── State ───────────────────────────────────────────────────────────[m
+[32m+[m[32m# ── 定义状态,适配LangGraph状态机 ───────────────────────────────────────────────────────────[m
+ [m
+ class AgentState(TypedDict):[m
+     intents: list[str][m
+[36m@@ -73,7 +73,7 @@[m [mclass AgentState(TypedDict):[m
+ _queue: asyncio.Queue | None = None[m
+ [m
+ [m
+[31m-# ── Helpers ─────────────────────────────────────────────────────────[m
+[32m+[m[32m# ── 定义给agent的一堆工具,有解析agent生成的JSON数据等 ─────────────────────────────────────────────────────────[m
+ [m
+ def _extract_json(text: str) -> dict:[m
+     m = re.search(r'\{[\s\S]*\}', text)[m
+[36m@@ -107,6 +107,7 @@[m [mdef _parse_agent_output(raw: str) -> str:[m
+     if "assessment" in j: return j["assessment"][m
+     return raw[m
+ [m
+[32m+[m[32m#----   防幻觉部分 ------------------------[m
+ async def _run_anti_hallucination(content: str, agent_type: str, topic: str) -> str:[m
+     if not content or len(content.strip()) < 50: return content[m
+     print(f"[anti_hallucination] Reviewing {agent_type}, input_len={len(content)}", flush=True)[m
+[36m@@ -128,7 +129,7 @@[m [masync def _run_anti_hallucination(content: str, agent_type: str, topic: str) ->[m
+     return content[m
+ [m
+ [m
+[31m-# ── Router ──────────────────────────────────────────────────────────[m
+[32m+[m[32m# ── 路由部分 ──────────────────────────────────────────────────────────[m
+ [m
+ async def detect_intent(user_message: str, history: list[dict], profile_context: str) -> dict:[m
+     print(f"[router] detect_intent called, user_message='{user_message[:60]}...'", flush=True)[m
+[36m@@ -148,6 +149,7 @@[m [masync def detect_intent(user_message: str, history: list[dict], profile_context:[m
+             j.setdefault("intents", ["chat"]); j.setdefault("target_topic", None)[m
+             j.setdefault("target_resource_types", ["document", "mindmap", "quiz"])[m
+             # ----- TODO输出即使响应的位置(后期可能需要完善一下，避免出现白屏太长) ------[m
+[32m+[m[32m            #设置的默认值[m
+             j.setdefault("response", "你好！我是智学通，有什么学习问题可以帮你？")[m
+             print(f"[router] result: intents={j.get('intents')}, topic={j.get('target_topic')}, types={j.get('target_resource_types')}", flush=True)[m
+             return j[m
+[36m@@ -156,7 +158,7 @@[m [masync def detect_intent(user_message: str, history: list[dict], profile_context:[m
+     return {"intents": ["chat"], "target_topic": None, "target_resource_types": ["document", "mindmap", "quiz"], "response": "你好！有什么可以帮你的？"}[m
+ [m
+ [m
+[31m-# ── Profile Node ────────────────────────────────────────────────────[m
+[32m+[m[32m# ── 分析和更新学生画像节点 ────────────────────────────────────────────────────[m
+ [m
+ async def _profile_node(state: AgentState) -> AgentState:[m
+     if "profile" not in state["intents"]: return state[m
+[36m@@ -206,7 +208,7 @@[m [masync def _profile_node(state: AgentState) -> AgentState:[m
+     return state[m
+ [m
+ [m
+[31m-# ── Path / Tutor / Assessment Nodes ─────────────────────────────────[m
+[32m+[m[32m# ── 学习路径 / 答疑助手 / 学习效果评估 节点 ─────────────────────────────────[m
+ [m
+ async def _path_node(state: AgentState) -> AgentState:[m
+     if "path" not in state["intents"]:[m
+[36m@@ -318,7 +320,7 @@[m [masync def _assessment_node(state: AgentState) -> AgentState:[m
+     return state[m
+ [m
+ [m
+[31m-# ── Response Node ───────────────────────────────────────────────────[m
+[32m+[m[32m# ── 响应结果进行流式输出 ───────────────────────────────────────────────────[m
+ [m
+ async def _send_response_node(state: AgentState) -> AgentState:[m
+     q = _queue[m
+[36m@@ -329,7 +331,7 @@[m [masync def _send_response_node(state: AgentState) -> AgentState:[m
+     return state[m
+ [m
+ [m
+[31m-# ── Resource Router (asyncio.gather for parallel agents) ──────────[m
+[32m+[m[32m# ── FASTAPI异步并行生成资源路由 ──────────[m
+ [m
+ async def _resource_router_node(state: AgentState) -> AgentState:[m
+     """Run all matching resource agents in parallel via asyncio.gather."""[m
+[36m@@ -411,7 +413,7 @@[m [masync def _resource_router_node(state: AgentState) -> AgentState:[m
+     return state[m
+ [m
+ [m
+[31m-# ── Routing functions ───────────────────────────────────────────────[m
+[32m+[m[32m# ── 路由函数,根据intents来决定下一步做什么(说人话就是神经网络节点，最TM重要) ───────────────────────────────────────────────[m
+ [m
+ def _route_after_response(state: AgentState) -> str:[m
+     """Chain: profile → resource → path → tutor → assessment → finalize"""[m
+[36m@@ -460,7 +462,7 @@[m [mdef _route_after_tutor(state: AgentState) -> str:[m
+     return dest[m
+ [m
+ [m
+[31m-# ── Finalize Node ───────────────────────────────────────────────────[m
+[32m+[m[32m# ── 终止节点 ───────────────────────────────────────────────────[m
+ [m
+ async def _finalize_node(state: AgentState) -> AgentState:[m
+     print(f"[graph] finalize — sending done signal", flush=True)[m
+[36m@@ -468,7 +470,7 @@[m [masync def _finalize_node(state: AgentState) -> AgentState:[m
+     return state[m
+ [m
+ [m
+[31m-# ── Build Graph ─────────────────────────────────────────────────────[m
+[32m+[m[32m# ── 建立状态图，应为LangGraph本质就是类似于图的结构 ─────────────────────────────────────────────────────[m
+ [m
+ def _build_graph() -> StateGraph:[m
+     graph = StateGraph(AgentState)[m
+[36m@@ -508,7 +510,7 @@[m [mdef _build_graph() -> StateGraph:[m
+ _graph = _build_graph()[m
+ [m
+ [m
+[31m-# ── Main Pipeline ───────────────────────────────────────────────────[m
+[32m+[m[32m# ── 负责协调生成的Graph图，主控制器和执行引擎 ───────────────────────────────────────────────────[m
+ [m
+ async def run_agent_pipeline([m
+     history: list[dict],[m
+[1mdiff --git a/backend/openai_client.py b/backend/openai_client.py[m
+[1mindex e9bc97e..ce008d0 100644[m
+[1m--- a/backend/openai_client.py[m
+[1m+++ b/backend/openai_client.py[m
+[36m@@ -5,12 +5,13 @@[m [mfrom typing import AsyncGenerator[m
+ from dotenv import load_dotenv[m
+ from openai import AsyncOpenAI[m
+ [m
+[32m+[m[32m#获取环境变量[m
+ # Load .env from backend directory[m
+ load_dotenv(Path(__file__).parent / ".env")[m
+ [m
+ _client = None[m
+ [m
+[31m-[m
+[32m+[m[32m#创建客户端[m
+ def _get_client():[m
+     global _client[m
+     if _client is None:[m
+[1mdiff --git a/backend/profile_agent.py b/backend/profile_agent.py[m
+[1mindex 9029c20..10df14c 100644[m
+[1m--- a/backend/profile_agent.py[m
+[1m+++ b/backend/profile_agent.py[m
+[36m@@ -7,6 +7,8 @@[m [mfrom openai_client import chat_complete[m
+ from models import StudentProfile[m
+ from agent_prompts import PROFILE_PROMPT[m
+ [m
+[32m+[m[32m#学生画像的模块[m
+[32m+[m
+ DIMENSION_LABELS = {[m
+     "major_background": "专业背景",[m
+     "knowledge_base": "知识基础",[m
+[1mdiff --git a/backend/schemas.py b/backend/schemas.py[m
+[1mindex 86ab81f..e924364 100644[m
+[1m--- a/backend/schemas.py[m
+[1m+++ b/backend/schemas.py[m
+[36m@@ -2,6 +2,9 @@[m [mfrom datetime import datetime[m
+ from pydantic import BaseModel, field_validator[m
+ [m
+ [m
+[32m+[m[32m#将每一个函数的参数都进行一个封装(与JAVA类似的操作QAQ)[m
+[32m+[m[32m#后期维护直接改这个TODO[m
+[32m+[m
+ class UserRegister(BaseModel):[m
+     username: str[m
+     password: str[m
+[1mdiff --git a/backend/test.py b/backend/test.py[m
+[1mindex bb1705c..214b29f 100644[m
+[1m--- a/backend/test.py[m
+[1m+++ b/backend/test.py[m
+[36m@@ -2,6 +2,8 @@[m [mimport os[m
+ from dotenv import load_dotenv[m
+ from openai import OpenAI[m
+ [m
+[32m+[m[32m#加载APIKEY的地方[m
+[32m+[m
+ load_dotenv()[m
+ [m
+ client = OpenAI([m

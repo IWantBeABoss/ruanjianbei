@@ -7,6 +7,8 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 
+#定义数据库字段的部分
+
 def _uuid():
     return str(uuid.uuid4())
 

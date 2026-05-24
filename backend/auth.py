@@ -9,6 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_session
 
+#生成和进行JWT令牌校验的基操(其实写法和JAVA的差不多QAQ)
+
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "ruanjianbei-dev-secret-key-change-in-prod")
 ALGORITHM = "HS256"
 TOKEN_EXPIRE_HOURS = 168  # 7 days

@@ -36,7 +36,7 @@ from auth import hash_password, verify_password, create_access_token, get_curren
 from exercise_parser import parse_exercises_from_content
 
 
-# ── Resource helpers ─────────────────────────────────────────────────
+# ── 给定生成资源的后缀名 ─────────────────────────────────────────────────
 
 FILE_EXTENSIONS = {
     "document": ".md", "quiz": ".md", "mindmap": ".md",
@@ -60,7 +60,7 @@ def _generate_file_name(rtype: str, topic: str) -> str:
     return f"{safe_topic}_{label}{ext}"
 
 
-# ── App ─────────────────────────────────────────────────────────────
+# ── 创建App实例 ─────────────────────────────────────────────────────────────
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -97,7 +97,7 @@ if os.path.exists(static_dir):
 
 
 
-# --- Auth Routes ---
+# --- 认证识别接口(进行JWT令牌校验,和JAVA类似) ---
 
 @app.post("/api/auth/register", response_model=TokenResponse)
 async def register(req: UserRegister, session: AsyncSession = Depends(get_session)):
@@ -138,7 +138,7 @@ async def get_me(user: User = Depends(get_current_user)):
     return UserOut(id=user.id, username=user.username, created_at=user.created_at)
 
 
-# --- Conversation Routes ---
+# --- 对话相关接口 ---
 
 @app.post("/api/conversations")
 async def create_conversation(
@@ -453,7 +453,7 @@ async def _extract_exercises_from_resources(conv_id: str, user_id: str, subject:
         pass
 
 
-# --- Student Profile Routes ---
+# --- 学生用户画像相关接口 ---
 
 @app.get("/api/student/profile")
 async def get_profile(
@@ -526,8 +526,8 @@ async def get_profile_markdown(
     profile = await get_or_create_profile(session, user.id)
     return {"markdown": format_profile_as_markdown(profile)}
 
-
-# --- Learning Materials ---
+#——————TODO
+# --- 学习资料接口(定义比较广泛) ---
 
 MATERIAL_SECTION_MARKERS = [
     "## 📖 课程讲解文档",
@@ -603,7 +603,7 @@ async def list_materials(
     return materials
 
 
-# --- Exercises ---
+# --- 练习题的接口 ---
 
 @app.get("/api/exercises")
 async def list_exercises(
@@ -636,14 +636,14 @@ async def list_exercises(
     ]
 
 
-# --- Resources ---
+# --- 资源相关接口 ---
 
 @app.get("/api/resources/all")
 async def list_all_resources(
     user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
-    """Return all resources for the current user, grouped by conversation."""
+    """(把当前用户生成的资源按对话模块进行分组)Return all resources for the current user, grouped by conversation."""
     stmt = (
         select(Resource)
         .where(Resource.user_id == user.id)
@@ -705,7 +705,7 @@ async def download_resource(
     user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
-    """Download a resource as a file."""
+    """(把资源转换成可下载的文件形式)Download a resource as a file."""
     from fastapi.responses import Response
     stmt = select(Resource).where(Resource.id == resource_id, Resource.user_id == user.id)
     result = await session.execute(stmt)
@@ -725,7 +725,7 @@ async def download_resource(
     ext = FILE_EXTENSIONS.get(r.resource_type, ".md")
     media_type = content_type_map.get(ext, "text/plain; charset=utf-8")
 
-    # RFC 5987: encode non-ASCII filename for Content-Disposition
+    # (将中文文件名转换成ASCII码编码的形式)RFC 5987: encode non-ASCII filename for Content-Disposition
     encoded_name = quote(r.file_name, safe="")
     fallback = f"{r.resource_type}{ext}"
 

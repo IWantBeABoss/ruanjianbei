@@ -2,6 +2,8 @@ import json
 import re
 
 
+#练习题的解析器(有JSON和Markdown的)
+
 def _extract_answer_block(text: str) -> tuple[str, str]:
     """Split text into question body and answer/explanation block."""
     patterns = [
@@ -31,7 +33,7 @@ def _is_header(text: str) -> bool:
     return bool(_HEADER_PATTERNS.match(text.strip()))
 
 
-# ── unified helpers ──────────────────────────────────────────────
+# ── 对练习题的各个部分进行提取(也就是将:题目、答案和解析分开) ──────────────────────────────────────────────
 
 def _split_numbered_blocks(text: str) -> list[str]:
     """Split text by numbered item markers. Filters out header lines first."""
@@ -48,7 +50,7 @@ def _extract_answer_letter(ans_block: str) -> str:
     return m.group(1) if m else ""
 
 
-# ── choice parser (option-group–anchored) ─────────────────────────
+# ── 选择的组件(claude写的，测试了没问题) ─────────────────────────
 
 def _parse_choice_questions(text: str) -> list[dict]:
     """Parse multiple choice questions by locating option groups (A/B/C/D)
@@ -154,7 +156,7 @@ def _parse_choice_questions(text: str) -> list[dict]:
     return questions
 
 
-# ── fill-blank parser ─────────────────────────────────────────────
+# ── 填空题解析器(其实就是占位符) ─────────────────────────────────────────────
 
 def _parse_fill_blank_questions(text: str) -> list[dict]:
     """Parse fill-in-the-blank questions."""
@@ -172,7 +174,7 @@ def _parse_fill_blank_questions(text: str) -> list[dict]:
     return questions
 
 
-# ── true-false parser ─────────────────────────────────────────────
+# ── 判断题解析器(进行判断题校验的) ─────────────────────────────────────────────
 
 def _parse_true_false_questions(text: str) -> list[dict]:
     """Parse true/false questions from LLM output.
@@ -212,7 +214,7 @@ SUBSECTION_PATTERNS = [
 ]
 
 
-# ── main entry point ─────────────────────────────────────────────
+# ── 主入口点 ─────────────────────────────────────────────
 
 def parse_exercises_from_content(content: str, subject: str = "") -> list[dict]:
     """Parse multi-agent exercise output into a list of structured question dicts."""
@@ -273,7 +275,7 @@ def parse_exercises_from_content(content: str, subject: str = "") -> list[dict]:
     return unique
 
 
-# ── JSON parser (for Quiz agent's structured output) ────────────────
+# ── JSON Parser 是专门用于解析 Quiz Agent 结构化输出的解析器，防止格式出问题 ────────────────
 
 TYPE_MAP = {
     "choice": "choice",

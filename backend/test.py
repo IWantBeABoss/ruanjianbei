@@ -2,6 +2,8 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
+#加载APIKEY的地方
+
 load_dotenv()
 
 client = OpenAI(

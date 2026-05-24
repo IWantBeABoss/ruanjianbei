@@ -1,4 +1,7 @@
-# --   意图识别agent      -----------------------
+#提示词文件方便维护
+
+
+# ----   意图识别agent      -----------------------
 
 COORDINATOR_PROMPT = """
 # 意图识别Router (IntentRouter)

@@ -5,12 +5,13 @@ from typing import AsyncGenerator
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
 
+#获取环境变量
 # Load .env from backend directory
 load_dotenv(Path(__file__).parent / ".env")
 
 _client = None
 
-
+#创建客户端
 def _get_client():
     global _client
     if _client is None:

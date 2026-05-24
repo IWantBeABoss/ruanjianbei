@@ -7,6 +7,8 @@ from openai_client import chat_complete
 from models import StudentProfile
 from agent_prompts import PROFILE_PROMPT
 
+#学生画像的模块
+
 DIMENSION_LABELS = {
     "major_background": "专业背景",
     "knowledge_base": "知识基础",

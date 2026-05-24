@@ -2,6 +2,9 @@ from datetime import datetime
 from pydantic import BaseModel, field_validator
 
 
+#将每一个函数的参数都进行一个封装(与JAVA类似的操作QAQ)
+#后期维护直接改这个TODO
+
 class UserRegister(BaseModel):
     username: str
     password: str

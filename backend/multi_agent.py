@@ -22,7 +22,7 @@ from agent_prompts import (
 )
 from openai_client import chat_complete, stream_chat
 
-# ── Constants ───────────────────────────────────────────────────────
+# ── 定义的常量 ───────────────────────────────────────────────────────
 
 RESOURCE_PROMPTS = {
     "document": DOCUMENT_PROMPT, "quiz": QUIZ_PROMPT,
@@ -58,7 +58,7 @@ def get_pipeline_profile_updates() -> dict:
     return result
 
 
-# ── State ───────────────────────────────────────────────────────────
+# ── 定义状态,适配LangGraph状态机 ───────────────────────────────────────────────────────────
 
 class AgentState(TypedDict):
     intents: list[str]
@@ -73,7 +73,7 @@ class AgentState(TypedDict):
 _queue: asyncio.Queue | None = None
 
 
-# ── Helpers ─────────────────────────────────────────────────────────
+# ── 定义给agent的一堆工具,有解析agent生成的JSON数据等 ─────────────────────────────────────────────────────────
 
 def _extract_json(text: str) -> dict:
     m = re.search(r'\{[\s\S]*\}', text)
@@ -107,6 +107,7 @@ def _parse_agent_output(raw: str) -> str:
     if "assessment" in j: return j["assessment"]
     return raw
 
+#----   防幻觉部分 ------------------------
 async def _run_anti_hallucination(content: str, agent_type: str, topic: str) -> str:
     if not content or len(content.strip()) < 50: return content
     print(f"[anti_hallucination] Reviewing {agent_type}, input_len={len(content)}", flush=True)
@@ -128,7 +129,7 @@ async def _run_anti_hallucination(content: str, agent_type: str, topic: str) -> 
     return content
 
 
-# ── Router ──────────────────────────────────────────────────────────
+# ── 路由部分 ──────────────────────────────────────────────────────────
 
 async def detect_intent(user_message: str, history: list[dict], profile_context: str) -> dict:
     print(f"[router] detect_intent called, user_message='{user_message[:60]}...'", flush=True)
@@ -148,6 +149,7 @@ async def detect_intent(user_message: str, history: list[dict], profile_context:
             j.setdefault("intents", ["chat"]); j.setdefault("target_topic", None)
             j.setdefault("target_resource_types", ["document", "mindmap", "quiz"])
             # ----- TODO输出即使响应的位置(后期可能需要完善一下，避免出现白屏太长) ------
+            #设置的默认值
             j.setdefault("response", "你好！我是智学通，有什么学习问题可以帮你？")
             print(f"[router] result: intents={j.get('intents')}, topic={j.get('target_topic')}, types={j.get('target_resource_types')}", flush=True)
             return j
@@ -156,7 +158,7 @@ async def detect_intent(user_message: str, history: list[dict], profile_context:
     return {"intents": ["chat"], "target_topic": None, "target_resource_types": ["document", "mindmap", "quiz"], "response": "你好！有什么可以帮你的？"}
 
 
-# ── Profile Node ────────────────────────────────────────────────────
+# ── 分析和更新学生画像节点 ────────────────────────────────────────────────────
 
 async def _profile_node(state: AgentState) -> AgentState:
     if "profile" not in state["intents"]: return state
@@ -206,7 +208,7 @@ async def _profile_node(state: AgentState) -> AgentState:
     return state
 
 
-# ── Path / Tutor / Assessment Nodes ─────────────────────────────────
+# ── 学习路径 / 答疑助手 / 学习效果评估 节点 ─────────────────────────────────
 
 async def _path_node(state: AgentState) -> AgentState:
     if "path" not in state["intents"]:
@@ -318,7 +320,7 @@ async def _assessment_node(state: AgentState) -> AgentState:
     return state
 
 
-# ── Response Node ───────────────────────────────────────────────────
+# ── 响应结果进行流式输出 ───────────────────────────────────────────────────
 
 async def _send_response_node(state: AgentState) -> AgentState:
     q = _queue
@@ -329,7 +331,7 @@ async def _send_response_node(state: AgentState) -> AgentState:
     return state
 
 
-# ── Resource Router (asyncio.gather for parallel agents) ──────────
+# ── FASTAPI异步并行生成资源路由 ──────────
 
 async def _resource_router_node(state: AgentState) -> AgentState:
     """Run all matching resource agents in parallel via asyncio.gather."""
@@ -411,7 +413,7 @@ async def _resource_router_node(state: AgentState) -> AgentState:
     return state
 
 
-# ── Routing functions ───────────────────────────────────────────────
+# ── 路由函数,根据intents来决定下一步做什么(说人话就是神经网络节点，最TM重要) ───────────────────────────────────────────────
 
 def _route_after_response(state: AgentState) -> str:
     """Chain: profile → resource → path → tutor → assessment → finalize"""
@@ -460,7 +462,7 @@ def _route_after_tutor(state: AgentState) -> str:
     return dest
 
 
-# ── Finalize Node ───────────────────────────────────────────────────
+# ── 终止节点 ───────────────────────────────────────────────────
 
 async def _finalize_node(state: AgentState) -> AgentState:
     print(f"[graph] finalize — sending done signal", flush=True)
@@ -468,7 +470,7 @@ async def _finalize_node(state: AgentState) -> AgentState:
     return state
 
 
-# ── Build Graph ─────────────────────────────────────────────────────
+# ── 建立状态图，应为LangGraph本质就是类似于图的结构 ─────────────────────────────────────────────────────
 
 def _build_graph() -> StateGraph:
     graph = StateGraph(AgentState)
@@ -508,7 +510,7 @@ def _build_graph() -> StateGraph:
 _graph = _build_graph()
 
 
-# ── Main Pipeline ───────────────────────────────────────────────────
+# ── 负责协调生成的Graph图，主控制器和执行引擎 ───────────────────────────────────────────────────
 
 async def run_agent_pipeline(
     history: list[dict],

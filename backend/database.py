@@ -1,6 +1,8 @@
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 
+#数据库的相关配置(注:用的sqlite，方便本地运行)
+
 DATABASE_URL = "sqlite+aiosqlite:///./chat.db"
 
 engine = create_async_engine(DATABASE_URL, echo=False)
