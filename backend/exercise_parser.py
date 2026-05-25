@@ -293,6 +293,9 @@ def parse_exercises_from_json(content: str, subject: str = "") -> list[dict]:
       - answer: str
       - explanation: str
       - options: {"A": "...", ...} (choice only)
+
+    Handles both the inner questions JSON directly and the outer
+    resource-wrapper format.
     """
     try:
         data = json.loads(content)
@@ -303,20 +306,30 @@ def parse_exercises_from_json(content: str, subject: str = "") -> list[dict]:
             try:
                 data = json.loads(m.group())
             except json.JSONDecodeError:
+                print(f"[exercise_parser] JSON parse failed even after regex extraction, content[:200]={content[:200]}", flush=True)
                 return []
         else:
+            print(f"[exercise_parser] No JSON-like structure found, content[:200]={content[:200]}", flush=True)
             return []
 
     # The content might be the outer wrapper: {"resource": {"content": "..."}}
     # or the inner questions JSON directly
-    if isinstance(data, dict) and "resource" in data:
-        try:
-            inner = json.loads(data["resource"]["content"])
-            data = inner
-        except (json.JSONDecodeError, TypeError, KeyError):
-            pass
+    if isinstance(data, dict) and "resource" in data and isinstance(data["resource"], dict):
+        inner_raw = data["resource"].get("content", "")
+        if inner_raw and isinstance(inner_raw, str):
+            try:
+                inner = json.loads(inner_raw)
+                data = inner
+            except (json.JSONDecodeError, TypeError):
+                # inner_raw might already be a dict if the LLM didn't stringify
+                pass
+        elif isinstance(inner_raw, dict):
+            data = inner_raw
 
     questions_raw = data.get("questions", []) if isinstance(data, dict) else []
+
+    if not questions_raw:
+        print(f"[exercise_parser] No 'questions' key found, keys={list(data.keys()) if isinstance(data, dict) else 'N/A'}, content[:200]={str(data)[:200]}", flush=True)
 
     parsed: list[dict] = []
     for q in questions_raw:

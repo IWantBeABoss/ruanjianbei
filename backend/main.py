@@ -306,7 +306,10 @@ async def chat(
                             data = json.loads(event[6:].strip())
                             if data.get("type") == "_save_quiz":
                                 from exercise_parser import parse_exercises_from_json as _parse
-                                exercises = _parse(data["content"], data["topic"])
+                                content = data["content"]
+                                print(f"[quiz] Parsing quiz content, len={len(content)}, topic={data['topic'][:40]}", flush=True)
+                                exercises = _parse(content, data["topic"])
+                                print(f"[quiz] Parsed {len(exercises)} exercises", flush=True)
                                 if exercises:
                                     async with async_session() as s:
                                         for i, q in enumerate(exercises):
@@ -327,9 +330,13 @@ async def chat(
                                     print(
                                         f"[quiz] Saved {len(exercises)} exercises for '{data['topic'][:40]}'",
                                         flush=True)
+                                else:
+                                    print(f"[quiz] WARNING: parse_exercises_from_json returned empty for '{data['topic'][:40]}', content preview: {content[:200]}", flush=True)
                                 continue
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            print(f"[quiz] ERROR parsing/saving exercises: {e}", flush=True)
+                            import traceback
+                            traceback.print_exc()
 
                     # Intercept _save events — save as Resource (skip quiz)
                     if '"_save"' in event:

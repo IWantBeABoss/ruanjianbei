@@ -386,10 +386,14 @@ async def _resource_router_node(state: AgentState) -> AgentState:
         print(f"[resource:{rtype}] raw_len={len(full)}, parsed_len={len(content)}", flush=True)
 
         if is_quiz:
-            if full and len(full.strip()) >= 20:
+            # Use parsed inner content (clean questions JSON) — same as
+            # every other resource type uses its parsed content. Raw full
+            # is the fallback when the outer wrapper fails to parse.
+            quiz_content = content if (content and len(content.strip()) >= 20) else full
+            if quiz_content and len(quiz_content.strip()) >= 20:
                 await _queue.put(
-                    {"type": "save_quiz", "rtype": rtype, "topic": topic, "content": full})
-                print(f"[resource:{rtype}] Quiz raw saved for exercise extraction", flush=True)
+                    {"type": "save_quiz", "rtype": rtype, "topic": topic, "content": quiz_content})
+                print(f"[resource:{rtype}] Quiz saved for exercise extraction, len={len(quiz_content)}", flush=True)
         elif content and len(content.strip()) >= 50:
             print(f"[resource:{rtype}] Running anti-hallucination review...", flush=True)
             reviewed = await _run_anti_hallucination(content, rtype, topic)
